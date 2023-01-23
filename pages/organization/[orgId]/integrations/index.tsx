@@ -85,21 +85,19 @@ export default function OrgHome() {
           {integrations?.map(({ name, id, webflow_integration_id }) => {
             return (
               <li
-                className="border bg-white p-4 rounded-lg flex items-center justify-between"
+                className="border bg-white p-4 rounded-lg flex items-center justify-between cursor-pointer"
                 key={id}
+                onClick={() =>
+                  router.push(
+                    `/organization/${
+                      router.query.orgId
+                    }/integrations/edit/${whichIntegration([
+                      ["webflow_integration_id", webflow_integration_id],
+                    ])}/${id}`
+                  )
+                }
               >
-                <h3
-                  className="text-xl font-bold cursor-pointer underline text-blue-600"
-                  onClick={() =>
-                    router.push(
-                      `/organization/${
-                        router.query.orgId
-                      }/integrations/edit/${whichIntegration([
-                        ["webflow_integration_id", webflow_integration_id],
-                      ])}/${id}`
-                    )
-                  }
-                >
+                <h3 className="text-xl font-bold underline text-blue-600">
                   {name}
                 </h3>
               </li>

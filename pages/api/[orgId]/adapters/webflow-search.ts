@@ -22,19 +22,55 @@ type Collection = {
   singularName: string;
 };
 
+interface FullCollection extends Collection {
+  fields?: Array<CollectionField>;
+}
+
+type BaseCollectionField = {
+  slug: string;
+  name: string;
+  id: string;
+};
+
+interface CollectionField extends BaseCollectionField {
+  type:
+    | "Bool"
+    | "Color"
+    | "Date"
+    | "ExtFileRef"
+    | "Set"
+    | "ImageRef"
+    | "Set"
+    | "ItemRef"
+    | "ItemRefSet"
+    | "Link"
+    | "Number"
+    | "Option"
+    | "PlainText"
+    | "RichText"
+    | "Video"
+    | "User"
+    | string;
+  required: boolean;
+  editable: boolean;
+  validations?: Record<string, string | number | boolean | object>;
+}
+
 type Data = {
   error?: string;
+  collection?: FullCollection;
   sites?: Array<Site>;
   collections?: Array<Collection>;
+  collectionFields?: Array<BaseCollectionField>;
 };
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
-  try {
-    const cryptr = new Cryptr(process.env.TOKEN_KEY as string);
+  const cryptr = new Cryptr(process.env.TOKEN_KEY as string);
 
+  try {
     let { data, error, status } = await supabaseAdmin
       .from("organizations")
       .select()
@@ -60,6 +96,25 @@ export default async function handler(
           });
           const collections = await site.collections();
           res.status(200).json({ collections });
+          break;
+        case "get-collection":
+          const site2 = await webflow.site({
+            siteId: req.query.site_id as string,
+          });
+
+          const collection = await site2.collection({
+            collectionId: req.query.collection_id,
+          } as { collectionId: string });
+
+          const collectionFields = collection.fields.map((field) => {
+            return {
+              slug: field.slug,
+              name: field.name,
+              id: field.id,
+            };
+          });
+
+          res.status(200).json({ collection, collectionFields });
           break;
         default:
           res.status(500).json({ error: "search type doesn't exist" });

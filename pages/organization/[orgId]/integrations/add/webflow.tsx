@@ -19,8 +19,8 @@ export default function OrgWebflowIntegration() {
     },
   };
   const supabase = useSupabaseClient();
-  const session = useSession();
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
   const [formState, setFormState] = useState(baseFormState);
   const [org, setOrg] = useState({ webflow_access_token: "" });
   const [siteIdFound, setSiteIdFound] = useState(false);
@@ -112,6 +112,7 @@ export default function OrgWebflowIntegration() {
 
   async function handleSiteSearch() {
     setSiteIdFound(!siteIdFound);
+    setLoading(true);
 
     if (!siteIdFound === true) {
       const response = await fetch(
@@ -120,12 +121,16 @@ export default function OrgWebflowIntegration() {
       const { sites } = await response.json();
 
       setSiteIdResults(sites);
+      setLoading(false);
     } else {
       setSiteIdResults([]);
+      setLoading(false);
     }
   }
+
   async function handleCollectionSearch() {
     setCollectionIdFound(!collectionIdFound);
+    setLoading(true);
 
     if (!collectionIdFound === true) {
       const response = await fetch(
@@ -134,8 +139,10 @@ export default function OrgWebflowIntegration() {
       const { collections } = await response.json();
 
       setCollectionIdResults(collections);
+      setLoading(false);
     } else {
       setCollectionIdResults([]);
+      setLoading(false);
     }
   }
 
@@ -176,6 +183,7 @@ export default function OrgWebflowIntegration() {
                       <button
                         key={_id}
                         type="button"
+                        className="block"
                         onClick={() => {
                           setFormState((v) => ({
                             ...v,
@@ -192,6 +200,21 @@ export default function OrgWebflowIntegration() {
                       </button>
                     );
                   })}
+                  {!loading && siteIdResults.length === 0 && (
+                    <>
+                      May need to reauth{" "}
+                      <Button
+                        variant="green"
+                        onClick={() =>
+                          router.push(
+                            `/api/${router.query.orgId}/authorize/webflow`
+                          )
+                        }
+                      >
+                        Authorize Webflow
+                      </Button>
+                    </>
+                  )}
                 </div>
               )}
             </div>
@@ -217,6 +240,7 @@ export default function OrgWebflowIntegration() {
                     return (
                       <button
                         key={_id}
+                        className="block"
                         type="button"
                         onClick={() => {
                           setFormState((v) => ({
@@ -234,6 +258,21 @@ export default function OrgWebflowIntegration() {
                       </button>
                     );
                   })}
+                  {!loading && collectionIdResults.length === 0 && (
+                    <>
+                      May need to reauth{" "}
+                      <Button
+                        variant="green"
+                        onClick={() =>
+                          router.push(
+                            `/api/${router.query.orgId}/authorize/webflow`
+                          )
+                        }
+                      >
+                        Authorize Webflow
+                      </Button>
+                    </>
+                  )}
                 </div>
               )}
             </div>
@@ -253,7 +292,8 @@ export default function OrgWebflowIntegration() {
           disabled={
             !org?.webflow_access_token ||
             !formState.webflow_integrations.site_id ||
-            !formState.webflow_integrations.collection_id
+            !formState.webflow_integrations.collection_id ||
+            !formState.name
           }
         />
       </form>
