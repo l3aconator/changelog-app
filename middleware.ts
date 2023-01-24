@@ -1,12 +1,7 @@
 import { createMiddlewareSupabaseClient } from "@supabase/auth-helpers-nextjs";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
-);
+import supabaseAdmin from "utils/supabaseAdmin";
 
 async function checkIfOrganizationExists(pathname: string, user_id: string) {
   const pathArray = pathname.split("/");
@@ -46,7 +41,7 @@ export async function middleware(req: NextRequest) {
     if (
       await checkIfOrganizationExists(req.nextUrl.pathname, session.user.id)
     ) {
-      return res;
+      return NextResponse.rewrite(req.nextUrl);
     }
   }
 
