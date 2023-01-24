@@ -8,38 +8,28 @@ type Data = {
   status?: string;
 };
 
-const handleCreateWebhook = async (
+const handleRemoveWebhook = async (
   site: any,
   trigger_type: string,
-  site_id: string,
-  org_id: string
+  site_id: string
 ) => {
-  const url = `${process.env.NEXT_PUBLIC_URL}/${org_id}/callback/webflow/post`;
-
-  const {
-    _id: webhook_id,
-    url: webhook_url,
-    triggerId: trigger_id,
-  } = await site.createWebhook({
-    url,
-    triggerType: trigger_type,
-    siteId: site_id,
-  });
-
   let { data } = await supabaseAdmin
     .from("webflow_webhooks")
     .select()
     .eq("site_id", site_id)
-    .eq("trigger_type", trigger_type);
+    .eq("trigger_type", trigger_type)
+    .single();
 
-  if (data?.length === 0 || !data) {
-    await supabaseAdmin.from("webflow_webhooks").insert({
-      site_id,
-      trigger_type,
-      webhook_id,
-      url: webhook_url,
-      trigger_id,
+  if (data) {
+    await site.removeWebhook({
+      siteId: site_id,
+      webhookId: data.webhook_id,
     });
+
+    await supabaseAdmin
+      .from("webflow_webhooks")
+      .delete()
+      .match({ site_id, trigger_type });
   }
 };
 
@@ -68,29 +58,25 @@ export default async function handler(
         siteId: site_id as string,
       });
 
-      await handleCreateWebhook(
+      await handleRemoveWebhook(
         site,
         "collection_item_created",
-        site_id as string,
-        orgId as string
+        site_id as string
       );
-      await handleCreateWebhook(
+      await handleRemoveWebhook(
         site,
         "collection_item_changed",
-        site_id as string,
-        orgId as string
+        site_id as string
       );
-      await handleCreateWebhook(
+      await handleRemoveWebhook(
         site,
         "collection_item_deleted",
-        site_id as string,
-        orgId as string
+        site_id as string
       );
-      await handleCreateWebhook(
+      await handleRemoveWebhook(
         site,
         "collection_item_unpublished",
-        site_id as string,
-        orgId as string
+        site_id as string
       );
 
       res.status(200).json({ status: "done" });

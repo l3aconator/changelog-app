@@ -189,16 +189,20 @@ export default function OrgHome() {
 
   async function handleDelete() {
     try {
-      await supabase
-        .from("webflow_integrations")
-        .delete()
-        .eq("id", integration.webflow_integrations.id);
-
       let { error, status } = await supabase
         .from("organization_integrations")
         .delete()
         .eq("organization_id", router.query.orgId)
         .eq("id", router.query.orgIntegrationId);
+
+      await fetch(
+        `/api/${router.query.orgId}/adapters/webflow-remove?site_id=${integration.webflow_integrations.site_id}`
+      );
+
+      await supabase
+        .from("webflow_integrations")
+        .delete()
+        .eq("id", integration.webflow_integrations.id);
 
       if (error && status !== 406) {
         throw error;

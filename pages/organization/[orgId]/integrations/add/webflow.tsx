@@ -85,6 +85,10 @@ export default function OrgWebflowIntegration() {
           organization_id: router.query.orgId,
         });
 
+      await fetch(
+        `/api/${router.query.orgId}/adapters/webflow-setup?site_id=${webflow_integrations.site_id}`
+      );
+
       if (error && status !== 406) {
         throw error;
       }
