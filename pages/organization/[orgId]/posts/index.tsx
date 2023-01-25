@@ -1,51 +1,38 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import { useRouter } from "next/router";
 import Layout from "components/Layout";
 import Button from "components/Button";
 
-function whichIntegration(id_columns: [string, string][]) {
-  return id_columns.map(([key, value]) => {
-    switch (key) {
-      case "webflow_integration_id":
-        if (value !== "") {
-          return "webflow";
-        }
-      default:
-        return;
-    }
-  })[0];
-}
-
-type Integration = {
+type Post = {
   id: string;
-  name: string;
-  webflow_integration_id: string;
+  title: string;
 };
 
-type Integrations = Array<Integration>;
+type Posts = Array<Post>;
 
 export default function OrgHome() {
   const supabase = useSupabaseClient();
   const router = useRouter();
-  const [integrations, setIntegrations] = useState<Integrations>();
+  const [posts, setPosts] = useState<Posts>();
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    async function getIntegrations() {
+    async function getPosts() {
       try {
         setLoading(true);
 
         let { data, error, status } = await supabase
-          .from("organization_integrations")
+          .from("posts")
           .select()
           .eq("organization_id", router.query.orgId);
+
         if (error && status !== 406) {
           throw error;
         }
 
         if (data) {
-          setIntegrations(data);
+          setPosts(data);
         }
       } catch (error) {
         console.log(error);
@@ -55,7 +42,7 @@ export default function OrgHome() {
     }
 
     if (router.query.orgId) {
-      getIntegrations();
+      getPosts();
     }
   }, [router, supabase]);
 
@@ -68,36 +55,32 @@ export default function OrgHome() {
   }
 
   return (
-    <Layout title="Integrations">
+    <Layout title="All Posts">
       <div className="flex justify-between">
-        <h2 className="text-4xl font-bold">Manage your integrations</h2>
+        <h2 className="text-4xl font-bold">Manage your posts</h2>
         <Button
           onClick={() =>
-            router.push(`/organization/${router.query.orgId}/integrations/add`)
+            router.push(`/organization/${router.query.orgId}/posts/add`)
           }
         >
-          Add integration
+          Add Post
         </Button>
       </div>
       <div className="mt-4">
         <ul className="grid grid-cols-4">
-          {integrations?.map(({ name, id, webflow_integration_id }) => {
+          {posts?.map(({ title, id }) => {
             return (
               <li
                 className="border bg-white p-4 rounded-lg flex items-center justify-between cursor-pointer"
                 key={id}
                 onClick={() =>
                   router.push(
-                    `/organization/${
-                      router.query.orgId
-                    }/integrations/edit/${whichIntegration([
-                      ["webflow_integration_id", webflow_integration_id],
-                    ])}/${id}`
+                    `/organization/${router.query.orgId}/posts/edit/${id}`
                   )
                 }
               >
                 <h3 className="text-xl font-bold underline text-blue-600">
-                  {name}
+                  {title}
                 </h3>
               </li>
             );
