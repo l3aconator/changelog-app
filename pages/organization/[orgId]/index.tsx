@@ -27,6 +27,13 @@ export default function OrgHome() {
         >
           Add integration
         </Button>
+        <Button
+          onClick={() =>
+            router.push(`/organization/${router.query.orgId}/posts/add`)
+          }
+        >
+          Add Post
+        </Button>
       </div>
     </Layout>
   );
