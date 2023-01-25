@@ -61,7 +61,7 @@ export default function OrgHome() {
     } catch (error) {
       console.log(error);
     } finally {
-      router.push(`/organization/${router.query.orgId}`);
+      router.push(`/organization/${router.query.orgId}/posts`);
     }
   }
 
@@ -90,10 +90,7 @@ export default function OrgHome() {
           />
         </div>
         <div className="flex mt-4">
-          <Button
-            variant="red"
-            onClick={() => router.push(`/organization/${router.query.orgId}`)}
-          >
+          <Button variant="red" onClick={() => router.back()}>
             Cancel
           </Button>
           <Button type="submit" disabled={!post.title} />

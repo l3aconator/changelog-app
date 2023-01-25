@@ -65,6 +65,13 @@ export default function Sidebar() {
               router.push(`/organization/${router.query.orgId}`);
             }}
           />
+          <SidebarItem
+            title="Posts"
+            path={`/organization/${router.query.orgId}/posts`}
+            onClick={() => {
+              router.push(`/organization/${router.query.orgId}/posts`);
+            }}
+          />
           <SidebarTitle title="Something" />
           <SidebarItem
             title="Integrations"
